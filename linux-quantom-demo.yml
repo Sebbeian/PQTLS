@@ -1,0 +1,51 @@
+---
+- name: Copy pki sert for nginx demo
+  hosts: all
+  become: yes
+
+  vars:
+    compose_file_src: "./quantom_demo/"
+    project_dir: "/root/server-pki"
+
+  tasks:
+
+    - name: Create project directory if it does not exist
+      ansible.builtin.file:
+        path: "{{ project_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Copy quantom_demo files to remote host
+      ansible.builtin.copy:
+        src: "{{ compose_file_src }}"
+        dest: "{{ project_dir }}"
+        mode: '0644'
+    - name: Rename ee-cert.pem to server.crt
+      ansible.builtin.command:
+        cmd: mv /root/server-pki/ee-cert.pem /root/server-pki/server.crt
+      args:
+        removes: /root/server-pki/ee-cert.pem
+      register: rename_result1
+    
+    - name: Rename ee-key.pem to server.key
+      ansible.builtin.command:
+        cmd: mv /root/server-pki/ee-key.pem /root/server-pki/server.key
+      args:
+        removes: /root/server-pki/ee-key.pem
+      register: rename_result2
+
+
+    - name: Pull Docker image
+      community.docker.docker_image:
+        name: "openquantumsafe/nginx"
+        source: pull
+
+    - name: Run Docker container in detached mode
+      community.docker.docker_container:
+        name: "Sebastian_quantom"
+        image: "openquantumsafe/nginx"
+        state: started
+        volumes:
+          - /root/server-pki/:/opt/nginx/pki
+        restart_policy: always
+        ports: "4433:4433"

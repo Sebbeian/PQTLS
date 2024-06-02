@@ -1,0 +1,28 @@
+---
+- name: Install Docker on Rocky Linux 8
+  hosts: all
+  become: yes
+  tasks:
+    - name: Add Docker CE repository
+      yum_repository:
+        name: docker-ce
+        description: Docker CE Repository
+        baseurl: https://download.docker.com/linux/centos/$releasever/$basearch/stable 
+        gpgcheck: yes
+        enabled: yes
+        gpgkey: https://download.docker.com/linux/centos/gpg    
+
+    - name: Install required dependencies
+      package:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - docker-ce-cli 
+        - containerd.io
+        - docker-ce
+    
+    - name: Start and enable Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
