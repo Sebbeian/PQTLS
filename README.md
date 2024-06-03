@@ -8,11 +8,11 @@ Files for this test:
 
 1. Create a VM in NREC or set up another environment on a self-chosen service
   1.1 Build a Instance with the following credential
-       Source/OS: GOLD Ubuntu Linux 9
-       Flavor: m1.small
-       Networks: dualStack
-       Security Group: SSH_and_ICMP
-       Key Pair: Create Key Pair: SSH
+  - Source/OS: GOLD Ubuntu Linux 9
+  - Flavor: m1.small
+  - Networks: dualStack
+  - Security Group: SSH_and_ICMP
+  - Key Pair: Create Key Pair: SSH
 
 
 
