@@ -36,14 +36,13 @@ Files for this test:
 1. Create two VM's in NREC or set up another client-server environment.
 &nbsp;1.1 For a NREC you must make two instances
 &nbsp;&nbsp;1.1.1 Instance 1: Ansible controller
-       &nbsp;Source/OS: GOLD Rocky Linux 9
-       &nbsp;Flavor: m1.small
-       &nbsp;Networks: dualStack
-       &nbsp;Security Group: SSH_and_ICMP
-       &nbsp;Key Pair: Create Key Pair: SSH
-  
-  1.1.2 Instance 2: Connector
-       Source/OS: GOLD Rocky Linux 9
+&nbsp;&nbsp;Source/OS: GOLD Rocky Linux 9
+&nbsp;&nbsp;Flavor: m1.small
+&nbsp;&nbsp;Networks: dualStack
+&nbsp;&nbsp;Security Group: SSH_and_ICMP
+&nbsp;&nbsp;Key Pair: Create Key Pair: SSH
+&nbsp;&nbsp;1.1.2 Instance 2: Connector
+&nbsp;&nbsp;Source/OS: GOLD Rocky Linux 9
        Flavor: m1.large
        Networks: dualStack
        Security Group: SSH_and_ICMP
