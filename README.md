@@ -1,26 +1,140 @@
 # PQTLS
 
-OQS EXPERIMENT
+**THESIS EXPERIMENT**
 
 NB! To use NREC you must first apply for ann account through NREC.no
 
 Files for this test:
+None
+<br><br><br><br>
+**1. Create a VM in NREC or set up another environment on a self-chosen service**
 
-1. Create a VM in NREC or set up another environment on a self-chosen service
-  1.1 Build a Instance with the following credential
+- Build a Instance with the following credential
   - Source/OS: GOLD Ubuntu Linux 9
   - Flavor: m1.small
   - Networks: dualStack
   - Security Group: SSH_and_ICMP
   - Key Pair: Create Key Pair: SSH
 
+<br><br><br><br>
+**2. Install the dependencies**<br><br>
+- Run `sudo apt update` to check that everything is up-to-date.
 
+- Run `sudo apt -y install git build-essential perl cmake autoconf libtool zlib1g-dev` to install essential.
 
+- These commands configure the environment, creating a workspace and directories for building software.
+  - Run `export WORKSPACE=~/quantumsafe` to set a work directory.
+  - Run `export BUILD_DIR=$WORKSPACE/build` to build the artifacts.
+  - Run mkdir -p `$BUILD_DIR/lib64` to make the directory.
+  - Run `ln -s $BUILD_DIR/lib64 $BUILD_DIR/lib`
+<br><br><br><br>
+
+**3. Install OpenSSL**
+<br><br>
+- Go to the workspace by running `cd $WORKSPACE`
+
+- Clone the Git reposatory for OpenSSL by running `git clone https://github.com/openssl/openssl.git`
+
+- Go to OpenSSL directory by `cd openssl` and run the following command:
+`./Configure \
+  --prefix=$BUILD_DIR \
+  no-ssl no-tls1 no-tls1_1 no-afalgeng \
+  no-shared threads -lm`
+
+- Run make -j $(nproc)
+
+- Run make -j $(nproc) install_sw install_ssldirs
+<br><br><br><br>
+
+**4. Install liboqs**
+<br><br>
+- Go back to the workspace `cd $WORKSPACE`
+
+- Clone the Git reposatory for LibOQS with `git clone https://github.com/open-quantum-safe/liboqs.git`.
+
+- Go into the LibOQS directory cd liboqs and build a "build"-directory with `mkdir build` and enter it `cd build`.
+
+- Make
+
+`cmake \
+  -DCMAKE_INSTALL_PREFIX=$BUILD_DIR \
+  -DBUILD_SHARED_LIBS=ON \
+  -DOQS_USE_OPENSSL=OFF \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DOQS_BUILD_ONLY_LIB=ON \
+  -DOQS_DIST_BUILD=ON \
+  ..`
+
+- Run `make -j $(nproc)`
+
+- Run `make -j $(nproc) install`
+
+<br><br><br><br>
+**5. Install OQS provider for OpenSSL 3**
+<br><br>
+- Go back to the workspace `cd $WORKSPACE`
+
+- Clone the Git reposatory for OQS provider for OpenSSL 3 with `git clone https://github.com/open-quantum-safe/oqs-provider.git`.
+
+- Enter the OQS-provider `cd oqs-provider` and run:
+
+`liboqs_DIR=$BUILD_DIR cmake \
+  -DCMAKE_INSTALL_PREFIX=$WORKSPACE/oqs-provider \
+  -DOPENSSL_ROOT_DIR=$BUILD_DIR \
+  -DCMAKE_BUILD_TYPE=Release \
+  -S . \
+  -B _build
+cmake --build _build`
+
+- Now use this command to manually copy the files into the build dir; `cp _build/lib/* $BUILD_DIR/lib/`
+
+- We need to edit the openssl config to use the OQS-provider. This is done by running:
+`sed -i "s/default = default_sect/default = default_sect\noqsprovider = oqsprovider_sect/g" $BUILD_DIR/ssl/openssl.cnf &&
+sed -i "s/\[default_sect\]/\[default_sect\]\nactivate = 1\n\[oqsprovider_sect\]\nactivate = 1\n/g" $BUILD_DIR/ssl/openssl.cnf`
+
+- Change environment variables for the oqsprovider, so that it is used when using OpenSSL. Run:
+`export OPENSSL_CONF=$BUILD_DIR/ssl/openssl.cnf`
+`export OPENSSL_MODULES=$BUILD_DIR/lib`
+`$BUILD_DIR/bin/openssl list -providers -verbose -provider oqsprovider`
+
+<br><br><br><br>
+**6. Install and run cURL with quantum-safe algorithms**
+<br><br>
+- Go to the workspace by running `cd $WORKSPACE`
+
+- Clone the Git reposatory for LibOQS with `git clone https://github.com/curl/curl.git`.
+
+- Go to the Git directory `cd curl` and run:
+  `autoreconf -fi
+  ./configure \
+    LIBS="-lssl -lcrypto -lz" \
+    LDFLAGS="-Wl,-rpath,$BUILD_DIR/lib64 -L$BUILD_DIR/lib64 -Wl,-rpath,$BUILD_DIR/lib -L$BUILD_DIR/lib -Wl,-rpath,/lib64 -L/lib64 -Wl,-rpath,/lib -L/lib" \
+    CFLAGS="-O3 -fPIC" \
+    --prefix=$BUILD_DIR \
+    --with-ssl=$BUILD_DIR \
+    --with-zlib=/ \
+    --enable-optimize --enable-libcurl-option --enable-libgcc --enable-shared \
+    --enable-ldap=no --enable-ipv6 --enable-versioned-symbols \
+    --disable-manual \
+    --without-default-ssl-backend \
+    --without-librtmp --without-libidn2 \
+    --without-gnutls --without-mbedtls \
+    --without-wolfssl --without-libpsl`
+
+- Run `make -j $(nproc)`
+
+- Run `make -j $(nproc) install`
+<br><br><br><br>
+**7. Running the tests**
+<br><br>
+- Run `$BUILD_DIR/bin/curl -vk https://test.openquantumsafe.org/CA.crt --output $BUILD_DIR/ca.cert`
+
+- Run `$BUILD_DIR/bin/curl -v --curves p521_kyber1024 --cacert $BUILD_DIR/ca.cert https://test.openquantumsafe.org:6130/`
 
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-DIGICERT EXPERIMENT
+**DIGICERT EXPERIMENT**
 
 NB! 
 - To use NREC you must first apply for ann account through NREC.no
@@ -32,9 +146,9 @@ Files for this test:
 - linux-install-docker (instalaltion of the docker environment)
 - linux-quantom-demo (the script that applies certificates)
 
-
+<br><br><br><br>
 1. Create two VM's in NREC or set up another client-server environment.
-
+<br><br>
 1.1 For a NREC you must make two instances
 
 1.1.1 Instance 1: Ansible controller
@@ -53,54 +167,50 @@ Files for this test:
    
 1.2 Instance 1 is used for part 2-6 and Instance 2 is used for part 7
 
-
+<br><br><br><br>
 2. After booting up Instance 1, install necessary packages
-
-  2.1 Div packages, run "sudo yum update"
+<br><br>
+  2.1 Div packages, run `sudo yum update` to update all 
   
-  2.2 Epel, run "sudo yum install epel-release"
+  2.2 Epel, run `sudo yum install epel-release` to install
 
-  2.3 Ansible, run "sudo yum install ansible"
+  2.3 Ansible, run `sudo yum install ansible` to install
 
-
-3. Download all the necessary files from the git reposatory
-
+<br><br><br><br>
+3. Download all the necessary files from the git reposatory (this reposatory)
+<br><br>
+<br><br>
 4. Create a inventory file and add:
-
-  4.1 Run: `vi linux_inventory.yml`
+<br><br>
+  4.1 Run `vi linux_inventory.yml`
 
   4.2 Add this: 
 
-    `linux_hosts:
-
+    `linux_hosts:<
        hosts:
-
          quantom:
-
            ansible_host: 158.39.77.74
-
            ansible_user: rocky
-
            ansible_ssh_private_key_file: /Users/YourUserName/.ssh/openstack`
 
-
+<br><br><br><br>
 5. Install docker
-
+<br><br>
    5.1 Run: `ansible-playbook -i linux_inventory.yml linux-install-docker.yml`
 
-
-6. Collect certificates and start the nginx 
-
+<br><br><br><br>
+6. Collect certificates and start nginx 
+<br><br>
    6.1 Run: `ansible-playbook -i linux_inventory.yml linux-quantom-demo.yml`
    NB! If you want to use other certificates, you need replace them in the quantum_demo folder,
    this is were the playbook collects them and put them into their place.
 
-
+<br><br><br><br>
 7. Test connectiong ssh rocky@instance_ip
+<br><br>
+   7.1 Run: `ssh rocky@instance_ip` to test the SSH-connection to the other "part" (Instance 2)
 
-   7.1 Run: `ssh rocky@instance_ip`
-
-
+<br><br><br><br>
 8. Run the TLS-handshake command (remeber to add own credentials (instance_ip, port and algorithm)
-
+<br><br>
    8.1 Run: `docker run -it -v /root/server-pki/ca-cert.pem:/ca-cert.pem openquantumsafe/curl curl https://instance:port -vvi --curves kyber768 --cacert ./ca-cert.pem`
