@@ -91,13 +91,17 @@ cmake --build _build
 - Now use this command to manually copy the files into the build dir; `cp _build/lib/* $BUILD_DIR/lib/`
 
 - We need to edit the openssl config to use the OQS-provider. This is done by running:
-`sed -i "s/default = default_sect/default = default_sect\noqsprovider = oqsprovider_sect/g" $BUILD_DIR/ssl/openssl.cnf &&
+```bash
+sed -i "s/default = default_sect/default = default_sect\noqsprovider = oqsprovider_sect/g" $BUILD_DIR/ssl/openssl.cnf &&
 sed -i "s/\[default_sect\]/\[default_sect\]\nactivate = 1\n\[oqsprovider_sect\]\nactivate = 1\n/g" $BUILD_DIR/ssl/openssl.cnf`
+```
 
 - Change environment variables for the oqsprovider, so that it is used when using OpenSSL. Run:
-`export OPENSSL_CONF=$BUILD_DIR/ssl/openssl.cnf`
-`export OPENSSL_MODULES=$BUILD_DIR/lib`
-`$BUILD_DIR/bin/openssl list -providers -verbose -provider oqsprovider`
+```bash
+export OPENSSL_CONF=$BUILD_DIR/ssl/openssl.cnf
+export OPENSSL_MODULES=$BUILD_DIR/lib
+$BUILD_DIR/bin/openssl list -providers -verbose -provider oqsprovider
+```
 
 <br><br>
 **6. Install and run cURL with quantum-safe algorithms**
