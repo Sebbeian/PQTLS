@@ -27,7 +27,7 @@ None
 - These commands configure the environment, creating a workspace and directories for building software.
   - Run `export WORKSPACE=~/quantumsafe` to set a work directory.
   - Run `export BUILD_DIR=$WORKSPACE/build` to build the artifacts.
-  - Run mkdir -p `$BUILD_DIR/lib64` to make the directory.
+  - Run `mkdir -p $BUILD_DIR/lib64` to make the directory.
   - Run `ln -s $BUILD_DIR/lib64 $BUILD_DIR/lib`
 
 <br><br>
