@@ -159,7 +159,7 @@ NB!
 
 Files for this test:
 - quantum_demo (the certificate files)
-- linux-install-docker (instalaltion of the docker environment)
+- linux-install-docker (installaltion of the docker environment)
 - linux-quantom-demo (the script that applies certificates)
 <br><br>
 
